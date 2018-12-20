@@ -312,7 +312,7 @@
 
 
 /* MARK: SyntaxStyle */
-// Coloring indicator
+// Coloring indicator  // not in use since CotEditor 3.6.10
 "Coloring text…" = "テキストのカラーリング中...";
 "Please wait for a while." = "しばらくお待ちください...";
 "Extracting %@…" = "%@を抽出中...";

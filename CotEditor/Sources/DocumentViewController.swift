@@ -34,6 +34,7 @@ final class DocumentViewController: NSSplitViewController, NSMenuItemValidation,
     // MARK: Private Properties
     
     private var appearanceObserver: NSKeyValueObservation?
+    private weak var syntaxHighlightProgress: Progress?
     
     @IBOutlet private weak var splitViewItem: NSSplitViewItem?
     @IBOutlet private weak var statusBarItem: NSSplitViewItem?
@@ -361,9 +362,15 @@ final class DocumentViewController: NSSplitViewController, NSMenuItemValidation,
             // perform highlight in the next run loop to give layoutManager time to update temporary attribute
             let editedRange = textStorage.editedRange
             DispatchQueue.main.async { [weak self] in
-                guard let progress = syntaxParser.highlight(around: editedRange) else { return }
+                guard let self = self else { return }
                 
-                self?.presentHighlightIndicator(progress: progress, highlightLength: editedRange.length)
+                if let progress = self.syntaxHighlightProgress {
+                    // retry syntax highlight if the last highlightAll has not finished yet
+                    progress.cancel()
+                    self.syntaxHighlightProgress = self.syntaxParser?.highlightAll()
+                } else {
+                    _ = self.syntaxParser?.highlight(around: editedRange)
+                }
             }
         }
         
@@ -854,56 +861,7 @@ final class DocumentViewController: NSSplitViewController, NSMenuItemValidation,
     /// re-highlight whole content
     private func invalidateSyntaxHighlight() {
         
-        guard
-            let progress = self.syntaxParser?.highlightAll(),
-            let length = self.syntaxParser?.textStorage.length
-            else { return }
-        
-        self.presentHighlightIndicator(progress: progress, highlightLength: length)
-    }
-    
-    
-    /// show highlighting indicator for large string
-    private func presentHighlightIndicator(progress: Progress, highlightLength: Int) {
-        
-        // show indicator only for a large update
-        let threshold = UserDefaults.standard[.showColoringIndicatorTextLength]
-        guard threshold > 0, highlightLength > threshold else { return }
-        
-        guard let window = self.view.window else {
-            assertionFailure("Expected window to be non-nil.")
-            return
-        }
-        
-        // display indicator first when window is visible
-        let presentBlock = { [weak self, weak progress] in
-            guard
-                let self = self,
-                let progress = progress,
-                !progress.isFinished, !progress.isCancelled
-                else { return }
-            
-            let message = "Coloring text…".localized
-            let indicator = ProgressViewController.instantiate(storyboard: "ProgressView")
-            indicator.setup(progress: progress, message: message, closesWhenFinished: true)
-            
-            self.presentAsSheet(indicator)
-        }
-        
-        if window.occlusionState.contains(.visible) {
-            presentBlock()
-        } else {
-            weak var observer: NSObjectProtocol?
-            observer = NotificationCenter.default.addObserver(forName: NSWindow.didChangeOcclusionStateNotification, object: window, queue: .main) { (_) in
-                guard window.occlusionState.contains(.visible) else { return }
-                
-                if let observer = observer {
-                    NotificationCenter.default.removeObserver(observer)
-                }
-                
-                presentBlock()
-            }
-        }
+        self.syntaxHighlightProgress = self.syntaxParser?.highlightAll()
     }
     
     

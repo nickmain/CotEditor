@@ -312,7 +312,7 @@
 
 
 /* MARK: SyntaxStyle */
-// Coloring indicator
+// Coloring indicator  // not in use since CotEditor 3.6.10
 "Coloring text…" = "Colorindo texto…";
 "Please wait for a while." = "Aguarde um momento.";
 "Extracting %@…" = "Extraindo %@…";
