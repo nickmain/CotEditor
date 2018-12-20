@@ -170,7 +170,6 @@ extension DefaultKeys {
     static let headerFooterDateFormat = DefaultKey<String>("headerFooterDateFormat")
     static let headerFooterPathAbbreviatingWithTilde = DefaultKey<Bool>("headerFooterPathAbbreviatingWithTilde")
     static let autoCompletionDelay = DefaultKey<Double>("autoCompletionDelay")
-    static let showColoringIndicatorTextLength = DefaultKey<Int>("showColoringIndicatorTextLength")
     static let coloringRangeBufferLength = DefaultKey<Int>("coloringRangeBufferLength")
     static let largeFileAlertThreshold = DefaultKey<Int>("largeFileAlertThreshold")
     static let autosavingDelay = DefaultKey<Double>("autosavingDelay")
